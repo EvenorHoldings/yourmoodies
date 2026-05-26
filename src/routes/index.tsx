@@ -13,17 +13,17 @@ import kioskImg from "@/assets/moodies-kiosk.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Moodies | Premium African Wellness Lifestyle" },
+      { title: "Moodies | Premium Wellness Edibles & Devices" },
       {
         name: "description",
         content:
-          "Taste your mood. Premium African wellness lifestyle. Emotional clarity through intentional design. Unified collections, collectible packaging, everyday luxury.",
+          "Taste your mood. Premium wellness edibles and devices. Emotional clarity through intentional design. Unified collections, collectible packaging, everyday luxury.",
       },
       { property: "og:title", content: "Moodies | moodies.site" },
       {
         property: "og:description",
         content:
-          "Premium African wellness lifestyle. Three collections. One unified visual language.",
+          "Premium wellness edibles and devices. Three collections. One unified visual language.",
       },
     ],
   }),
