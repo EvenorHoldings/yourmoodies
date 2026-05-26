@@ -1,6 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Instagram, Mail } from "lucide-react";
+import { SiteNav } from "@/components/site-nav";
+import { CartDrawer } from "@/components/cart-drawer";
 import upliftImg from "@/assets/moodies-uplift.jpg";
 import vapeImg from "@/assets/moodies-vape.jpg";
 import batteryImg from "@/assets/moodies-battery.jpg";
