@@ -501,8 +501,8 @@ function MoodiesWellness() {
       <section className="py-24 px-6 sm:px-8 bg-gray-50 border-t border-gray-100">
         <div className="max-w-2xl mx-auto text-center">
           <p className="text-2xl font-light text-gray-800 italic mb-8 leading-relaxed">
-            "Premium African wellness lifestyle. Globally competitive.
-            Distinctly rooted."
+            "Premium wellness lifestyle. Globally competitive.
+            Distinctly considered."
           </p>
           <div className="space-y-4 text-sm text-gray-600">
             <p>
