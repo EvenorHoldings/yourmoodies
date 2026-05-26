@@ -1,6 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Instagram, Mail } from "lucide-react";
+import { SiteNav } from "@/components/site-nav";
+import { CartDrawer } from "@/components/cart-drawer";
 import upliftImg from "@/assets/moodies-uplift.jpg";
 import vapeImg from "@/assets/moodies-vape.jpg";
 import batteryImg from "@/assets/moodies-battery.jpg";
@@ -11,17 +13,17 @@ import kioskImg from "@/assets/moodies-kiosk.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Moodies | Premium African Wellness Lifestyle" },
+      { title: "Moodies | Premium Wellness Edibles & Devices" },
       {
         name: "description",
         content:
-          "Taste your mood. Premium African wellness lifestyle. Emotional clarity through intentional design. Unified collections, collectible packaging, everyday luxury.",
+          "Taste your mood. Premium wellness edibles and devices. Emotional clarity through intentional design. Unified collections, collectible packaging, everyday luxury.",
       },
       { property: "og:title", content: "Moodies | moodies.site" },
       {
         property: "og:description",
         content:
-          "Premium African wellness lifestyle. Three collections. One unified visual language.",
+          "Premium wellness edibles and devices. Three collections. One unified visual language.",
       },
     ],
   }),
@@ -188,8 +190,10 @@ function MoodiesWellness() {
 
   return (
     <div className="bg-gradient-to-b from-amber-50 via-white to-gray-50 min-h-screen">
+      <SiteNav />
+      <CartDrawer />
       {/* HERO */}
-      <section className="relative py-28 px-6 sm:px-8 text-center overflow-hidden min-h-screen flex items-center justify-center">
+      <section className="relative py-28 px-6 sm:px-8 text-center overflow-hidden min-h-[80vh] flex items-center justify-center">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 max-w-3xl mx-auto animate-fade-in">
           <div className="mb-8 flex justify-center">
@@ -199,17 +203,31 @@ function MoodiesWellness() {
             Taste Your Mood
           </h1>
           <p className="text-xl text-gray-700 font-light mb-4 max-w-2xl mx-auto leading-relaxed">
-            Premium African wellness lifestyle. Emotional clarity through
+            Premium wellness edibles and devices. Emotional clarity through
             intentional design.
           </p>
-          <p className="text-sm text-gray-500 tracking-wide max-w-xl mx-auto">
+          <p className="text-sm text-gray-500 tracking-wide max-w-xl mx-auto mb-8">
             Unified collections. Collectible packaging. Everyday luxury.
           </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link
+              to="/shop"
+              className="px-8 py-3 bg-gray-900 text-white rounded-full font-medium text-sm hover:bg-gray-800 transition-colors"
+            >
+              Shop the collection
+            </Link>
+            <a
+              href="#mood-system"
+              className="px-8 py-3 border border-gray-300 text-gray-900 rounded-full font-medium text-sm hover:border-gray-500 transition-colors"
+            >
+              Explore moods
+            </a>
+          </div>
         </div>
       </section>
 
       {/* MOOD SYSTEM SELECTOR */}
-      <section className="py-20 px-6 sm:px-8 bg-white border-t border-gray-100">
+      <section id="mood-system" className="py-20 px-6 sm:px-8 bg-white border-t border-gray-100">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-light text-gray-800 mb-3">
@@ -483,8 +501,8 @@ function MoodiesWellness() {
       <section className="py-24 px-6 sm:px-8 bg-gray-50 border-t border-gray-100">
         <div className="max-w-2xl mx-auto text-center">
           <p className="text-2xl font-light text-gray-800 italic mb-8 leading-relaxed">
-            "Premium African wellness lifestyle. Globally competitive.
-            Distinctly rooted."
+            "Premium wellness lifestyle. Globally competitive.
+            Distinctly considered."
           </p>
           <div className="space-y-4 text-sm text-gray-600">
             <p>
@@ -540,12 +558,12 @@ function MoodiesWellness() {
             in every Moodies product.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <a
-              href="mailto:hello@moodies.site?subject=Explore%20Moodies"
+            <Link
+              to="/shop"
               className="px-8 py-3 bg-gray-900 text-white rounded-lg font-light hover:bg-gray-800 transition-colors"
             >
-              Explore Products
-            </a>
+              Shop the collection
+            </Link>
             <a
               href="mailto:hello@moodies.site?subject=Tell%20me%20more%20about%20Moodies"
               className="px-8 py-3 border border-gray-300 text-gray-900 rounded-lg font-light hover:border-gray-400 transition-colors"
@@ -558,7 +576,7 @@ function MoodiesWellness() {
 
       {/* FOOTER */}
       <footer className="py-12 px-6 sm:px-8 bg-gray-900 text-gray-300 text-center text-sm border-t border-gray-800">
-        <p className="mb-4">Moodies | Premium African Wellness Lifestyle</p>
+        <p className="mb-4">Moodies | Premium Wellness Edibles & Devices</p>
         <p className="text-gray-500 text-xs mb-6">
           Unified visual identity. Collectible packaging. Emotional clarity
           through intentional design.
