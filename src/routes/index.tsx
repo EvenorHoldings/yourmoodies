@@ -576,7 +576,7 @@ function MoodiesWellness() {
 
       {/* FOOTER */}
       <footer className="py-12 px-6 sm:px-8 bg-gray-900 text-gray-300 text-center text-sm border-t border-gray-800">
-        <p className="mb-4">Moodies | Premium African Wellness Lifestyle</p>
+        <p className="mb-4">Moodies | Premium Wellness Edibles & Devices</p>
         <p className="text-gray-500 text-xs mb-6">
           Unified visual identity. Collectible packaging. Emotional clarity
           through intentional design.
