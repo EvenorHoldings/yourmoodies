@@ -558,12 +558,12 @@ function MoodiesWellness() {
             in every Moodies product.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <a
-              href="mailto:hello@moodies.site?subject=Explore%20Moodies"
+            <Link
+              to="/shop"
               className="px-8 py-3 bg-gray-900 text-white rounded-lg font-light hover:bg-gray-800 transition-colors"
             >
-              Explore Products
-            </a>
+              Shop the collection
+            </Link>
             <a
               href="mailto:hello@moodies.site?subject=Tell%20me%20more%20about%20Moodies"
               className="px-8 py-3 border border-gray-300 text-gray-900 rounded-lg font-light hover:border-gray-400 transition-colors"
