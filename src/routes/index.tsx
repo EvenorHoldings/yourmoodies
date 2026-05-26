@@ -190,8 +190,10 @@ function MoodiesWellness() {
 
   return (
     <div className="bg-gradient-to-b from-amber-50 via-white to-gray-50 min-h-screen">
+      <SiteNav />
+      <CartDrawer />
       {/* HERO */}
-      <section className="relative py-28 px-6 sm:px-8 text-center overflow-hidden min-h-screen flex items-center justify-center">
+      <section className="relative py-28 px-6 sm:px-8 text-center overflow-hidden min-h-[80vh] flex items-center justify-center">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 max-w-3xl mx-auto animate-fade-in">
           <div className="mb-8 flex justify-center">
@@ -201,12 +203,26 @@ function MoodiesWellness() {
             Taste Your Mood
           </h1>
           <p className="text-xl text-gray-700 font-light mb-4 max-w-2xl mx-auto leading-relaxed">
-            Premium African wellness lifestyle. Emotional clarity through
+            Premium wellness edibles and devices. Emotional clarity through
             intentional design.
           </p>
-          <p className="text-sm text-gray-500 tracking-wide max-w-xl mx-auto">
+          <p className="text-sm text-gray-500 tracking-wide max-w-xl mx-auto mb-8">
             Unified collections. Collectible packaging. Everyday luxury.
           </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link
+              to="/shop"
+              className="px-8 py-3 bg-gray-900 text-white rounded-full font-medium text-sm hover:bg-gray-800 transition-colors"
+            >
+              Shop the collection
+            </Link>
+            <a
+              href="#mood-system"
+              className="px-8 py-3 border border-gray-300 text-gray-900 rounded-full font-medium text-sm hover:border-gray-500 transition-colors"
+            >
+              Explore moods
+            </a>
+          </div>
         </div>
       </section>
 
