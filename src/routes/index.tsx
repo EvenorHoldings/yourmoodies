@@ -227,7 +227,7 @@ function MoodiesWellness() {
       </section>
 
       {/* MOOD SYSTEM SELECTOR */}
-      <section className="py-20 px-6 sm:px-8 bg-white border-t border-gray-100">
+      <section id="mood-system" className="py-20 px-6 sm:px-8 bg-white border-t border-gray-100">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-light text-gray-800 mb-3">
