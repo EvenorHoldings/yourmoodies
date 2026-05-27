@@ -17,13 +17,46 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Taste your mood. Premium wellness edibles and devices. Emotional clarity through intentional design. Unified collections, collectible packaging, everyday luxury.",
+          "Discover Moodies — premium wellness edibles and devices designed for emotional clarity. Shop Uplift, Calm, and Balance collections. Taste your mood.",
       },
-      { property: "og:title", content: "Moodies | moodies.site" },
+      { property: "og:title", content: "Moodies | Premium Wellness Edibles & Devices" },
       {
         property: "og:description",
         content:
+          "Premium wellness edibles and devices. Three collections. One unified visual language. Emotional clarity through intentional design.",
+      },
+      { property: "og:url", content: "https://www.moodies.site/" },
+      { property: "og:type", content: "website" },
+      { property: "og:image", content: "https://www.moodies.site/og-image.jpg" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Moodies | Premium Wellness Edibles & Devices" },
+      {
+        name: "twitter:description",
+        content:
           "Premium wellness edibles and devices. Three collections. One unified visual language.",
+      },
+      { name: "twitter:image", content: "https://www.moodies.site/og-image.jpg" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://www.moodies.site/" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Moodies",
+          url: "https://www.moodies.site/",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: {
+              "@type": "EntryPoint",
+              urlTemplate: "https://www.moodies.site/shop?q={search_term_string}",
+            },
+            "query-input": "required name=search_term_string",
+          },
+        }),
       },
     ],
   }),
