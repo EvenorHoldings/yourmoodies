@@ -10,7 +10,15 @@ export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
       { title: "Checkout — Moodies" },
-      { name: "description", content: "Complete your Moodies order. Discreet, unbranded packaging. Flat R100 shipping." },
+      { name: "description", content: "Complete your Moodies order. Discreet, unbranded packaging. Flat R100 shipping across South Africa." },
+      { name: "robots", content: "noindex, nofollow" },
+      { property: "og:title", content: "Checkout — Moodies" },
+      { property: "og:description", content: "Complete your Moodies order. Discreet, unbranded packaging." },
+      { property: "og:url", content: "https://www.moodies.site/checkout" },
+      { property: "og:type", content: "website" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://www.moodies.site/checkout" },
     ],
   }),
   component: CheckoutPage,
