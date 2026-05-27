@@ -8,10 +8,20 @@ import { MOOD_META, SHOP_PRODUCTS, formatZAR, type Category, type Mood } from "@
 export const Route = createFileRoute("/shop")({
   head: () => ({
     meta: [
-      { title: "Shop — Moodies | Premium wellness edibles & devices" },
-      { name: "description", content: "Shop cartridges, batteries and edibles from Moodies. ZAR pricing, flat R100 shipping, discreet packaging." },
+      { title: "Shop — Moodies | Premium Wellness Edibles & Devices" },
+      { name: "description", content: "Shop cartridges, batteries and edibles from Moodies. Browse Uplift, Calm, and Balance collections. ZAR pricing, flat R100 shipping, discreet unbranded packaging." },
       { property: "og:title", content: "Shop — Moodies" },
       { property: "og:description", content: "Cartridges, batteries and edibles. Emotional clarity through intentional design." },
+      { property: "og:url", content: "https://www.moodies.site/shop" },
+      { property: "og:type", content: "website" },
+      { property: "og:image", content: "https://www.moodies.site/og-image.jpg" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Shop — Moodies" },
+      { name: "twitter:description", content: "Cartridges, batteries and edibles. Emotional clarity through intentional design." },
+      { name: "twitter:image", content: "https://www.moodies.site/og-image.jpg" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://www.moodies.site/shop" },
     ],
   }),
   component: ShopPage,
