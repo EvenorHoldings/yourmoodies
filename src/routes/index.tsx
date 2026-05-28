@@ -1,642 +1,404 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { Instagram, Mail } from "lucide-react";
-import { SiteNav } from "@/components/site-nav";
-import { CartDrawer } from "@/components/cart-drawer";
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+
 import upliftImg from "@/assets/moodies-uplift.jpg";
-import vapeImg from "@/assets/moodies-vape.jpg";
-import batteryImg from "@/assets/moodies-battery.jpg";
-import comboImg from "@/assets/moodies-combo.jpg";
-import trioImg from "@/assets/moodies-trio.jpg";
-import kioskImg from "@/assets/moodies-kiosk.jpg";
+import calmImg from "@/assets/moodies-combo.jpg";
+import balanceImg from "@/assets/moodies-trio.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Moodies | Premium Wellness Edibles & Devices" },
-      {
-        name: "description",
-        content:
-          "Discover Moodies — premium wellness edibles and devices designed for emotional clarity. Shop Uplift, Calm, and Balance collections. Taste your mood.",
-      },
-      { property: "og:title", content: "Moodies | Premium Wellness Edibles & Devices" },
-      {
-        property: "og:description",
-        content:
-          "Premium wellness edibles and devices. Three collections. One unified visual language. Emotional clarity through intentional design.",
-      },
+      { title: "Moodies | Taste Your Mood" },
+      { name: "description", content: "Scroll through a sensory journey of Uplift, Calm and Balance — premium wellness edibles by Moodies." },
+      { property: "og:title", content: "Moodies | Taste Your Mood" },
+      { property: "og:description", content: "A scroll-driven story of mood, designed in three chapters." },
       { property: "og:url", content: "https://www.moodies.site/" },
-      { property: "og:type", content: "website" },
       { property: "og:image", content: "https://www.moodies.site/og-image.jpg" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Moodies | Premium Wellness Edibles & Devices" },
-      {
-        name: "twitter:description",
-        content:
-          "Premium wellness edibles and devices. Three collections. One unified visual language.",
-      },
+      { name: "twitter:title", content: "Moodies | Taste Your Mood" },
+      { name: "twitter:description", content: "A scroll-driven story of mood, designed in three chapters." },
       { name: "twitter:image", content: "https://www.moodies.site/og-image.jpg" },
     ],
-    links: [
-      { rel: "canonical", href: "https://www.moodies.site/" },
-    ],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "WebSite",
-          name: "Moodies",
-          url: "https://www.moodies.site/",
-          potentialAction: {
-            "@type": "SearchAction",
-            target: {
-              "@type": "EntryPoint",
-              urlTemplate: "https://www.moodies.site/shop?q={search_term_string}",
-            },
-            "query-input": "required name=search_term_string",
-          },
-        }),
-      },
-    ],
+    links: [{ rel: "canonical", href: "https://www.moodies.site/" }],
   }),
-  component: MoodiesWellness,
+  component: StoryPage,
 });
 
-type CollectionKey = "uplift" | "calm" | "balance";
-
-const collections: Record<
-  CollectionKey,
-  {
-    name: string;
-    icon: string;
-    color: string;
-    mood: string;
-    description: string;
-    products: { name: string; serving: string; flavor: string }[];
-    gradient: string;
-    image: string;
-  }
-> = {
-  uplift: {
-    name: "Uplift",
-    icon: "⚡",
-    color: "#a8d5a8",
-    mood: "Morning clarity for creative energy",
-    description:
-      "Start your day with intention and social warmth. Energy, creativity, and focus.",
-    products: [
-      { name: "Gummies", serving: "Serves 5", flavor: "Citrus Blend" },
-      { name: "Cookies", serving: "Handcrafted", flavor: "Honey Oat" },
-    ],
-    gradient: "from-green-50 to-green-100/30",
-    image: upliftImg,
-  },
-  calm: {
-    name: "Calm",
-    icon: "🌿",
-    color: "#d4a5a5",
-    mood: "Evening ritual for deep rest",
-    description:
-      "Decompress, reset, and find your calm. Relaxation, stress relief, and peace.",
-    products: [
-      { name: "Gummies", serving: "Serves 5", flavor: "Berry Blend" },
-      { name: "Brownies", serving: "Single Serve", flavor: "Dark Cacao" },
-    ],
-    gradient: "from-red-50 to-red-100/30",
-    image: trioImg,
-  },
-  balance: {
-    name: "Balance",
-    icon: "🎶",
-    color: "#9bb8d4",
-    mood: "Anytime equilibrium",
-    description:
-      "Flexibility for every moment, every mood, every you. Social, adaptable, smooth.",
-    products: [
-      { name: "Gummies", serving: "Serves 5", flavor: "Mixed Berry" },
-      { name: "Cookies", serving: "Handcrafted", flavor: "Vanilla Cream" },
-    ],
-    gradient: "from-blue-50 to-blue-100/30",
-    image: comboImg,
-  },
+type Chapter = {
+  id: string;
+  eyebrow: string;
+  title: string;
+  body: string;
+  accent: [number, number, number]; // 0..1
+  bg: string;
+  image?: string;
 };
 
-const devices = [
-  { name: "Classic Battery — Matte Black", color: "Midnight", specs: "1000mAh, USB-C", image: batteryImg },
-  { name: "Classic Battery — Pearl White", color: "Cream", specs: "1000mAh, USB-C", image: batteryImg },
-  { name: "Premium Battery — Rose Gold", color: "Gold", specs: "1200mAh, Smart Display", image: vapeImg },
-  { name: "Premium Battery — Gunmetal", color: "Steel", specs: "1200mAh, Smart Display", image: vapeImg },
-];
-
-const principles = [
+const CHAPTERS: Chapter[] = [
   {
-    title: "Centered Composition",
-    description: "Product is hero. Clean white backgrounds. Minimal shadows. Breathing room matters.",
-    icon: "⊙",
+    id: "hero",
+    eyebrow: "Moodies",
+    title: "Taste Your Mood",
+    body: "A three-chapter story of wellness, designed for the way you actually feel.",
+    accent: [0.95, 0.95, 0.95],
+    bg: "#0a0a0a",
   },
   {
-    title: "Matte Finishes",
-    description: "Soft-touch packaging. Embossed branding (not printed). Premium restraint.",
-    icon: "▪",
+    id: "uplift",
+    eyebrow: "Chapter I",
+    title: "Uplift",
+    body: "Morning clarity. Creative spark. The first warm light against the wall — bottled into a citrus-bright ritual.",
+    accent: [1.0, 0.82, 0.12],
+    bg: "#1a1407",
+    image: upliftImg,
   },
   {
-    title: "Color Consistency",
-    description: "Three mood colors. Applied uniformly. Mood accent lines on every package.",
-    icon: "◼",
+    id: "calm",
+    eyebrow: "Chapter II",
+    title: "Calm",
+    body: "Evening unwind. Quiet focus. A slow exhale that settles into mint, lavender, and the soft hush of the day.",
+    accent: [0.31, 0.63, 0.62],
+    bg: "#06151a",
+    image: calmImg,
   },
   {
-    title: "Typography Hierarchy",
-    description: "Product name (large, clear). Mood identity (small, color). Supporting info (subtle).",
-    icon: "✎",
+    id: "balance",
+    eyebrow: "Chapter III",
+    title: "Balance",
+    body: "Anytime equilibrium. The centered middle. Berry and bloom for the hours that ask you to stay present.",
+    accent: [0.55, 0.37, 0.62],
+    bg: "#16091a",
+    image: balanceImg,
   },
   {
-    title: "Photography Standards",
-    description: "Soft 45° lighting. Square format (1:1). True-to-life color. Zero harsh shadows.",
-    icon: "📷",
-  },
-  {
-    title: "Grid System",
-    description: "8mm internal grid. Modular sizing. All elements aligned. Perfect consistency.",
-    icon: "⊞",
-  },
-];
-
-const homeGrown = [
-  {
-    category: "Gummies",
-    description: "Resealable pouches. Portion-controlled servings. Warm minimalism.",
-    icon: "🫐",
-    specs: ["Matte finish", "Mood color accent line", "Collectible design"],
-  },
-  {
-    category: "Cookies",
-    description: "Premium box packaging. Artisanal quality. Craft presentation.",
-    icon: "🍪",
-    specs: ["Kraft paper box", "Embossed logo", "Handcrafted feel"],
-  },
-  {
-    category: "Brownies",
-    description: "Single-serve sleeve. Minimal branding. Functional design.",
-    icon: "🍫",
-    specs: ["Cardboard sleeve", "Eco-friendly", "Discreet aesthetic"],
+    id: "cta",
+    eyebrow: "Begin",
+    title: "Experience the Collection",
+    body: "Hand-formulated in small batches. Shipped across South Africa.",
+    accent: [1, 1, 1],
+    bg: "#000000",
   },
 ];
 
-const corePrinciples = [
-  { emoji: "▬", label: "Simplicity" },
-  { emoji: "≡", label: "Consistency" },
-  { emoji: "♦", label: "Clarity" },
-  { emoji: "▪", label: "Restraint" },
-  { emoji: "◈", label: "Approachability" },
-];
+function StoryPage() {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [active, setActive] = useState(0);
+  const activeRef = useRef(0);
 
-const MoodiesLogo = () => (
-  <svg viewBox="0 0 140 80" className="w-32 h-auto">
-    <text
-      x="70"
-      y="50"
-      fontSize="44"
-      fontWeight="300"
-      textAnchor="middle"
-      fill="#8b8b88"
-      fontFamily="system-ui, -apple-system, sans-serif"
-      fontStyle="italic"
-      letterSpacing="-0.5"
-    >
-      moodies
-    </text>
-    <path
-      d="M 40 62 Q 70 72 100 62"
-      stroke="#8b8b88"
-      strokeWidth="2.5"
-      fill="none"
-      strokeLinecap="round"
-    />
-  </svg>
-);
+  // Three.js shader background — cursor-reactive painted noise tinted per chapter
+  useEffect(() => {
+    let raf = 0;
+    let disposed = false;
+    let cleanup: (() => void) | null = null;
 
-function MoodiesWellness() {
-  const [selectedCollection, setSelectedCollection] =
-    useState<CollectionKey>("uplift");
-  const currentCollection = collections[selectedCollection];
+    (async () => {
+      const THREE = await import("three");
+      if (disposed || !canvasRef.current) return;
+
+      const canvas = canvasRef.current;
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+      const scene = new THREE.Scene();
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+      const uniforms = {
+        uTime: { value: 0 },
+        uRes: { value: new THREE.Vector2(1, 1) },
+        uMouse: { value: new THREE.Vector2(0.5, 0.5) },
+        uMouseTarget: { value: new THREE.Vector2(0.5, 0.5) },
+        uColorA: { value: new THREE.Color(CHAPTERS[0].accent[0], CHAPTERS[0].accent[1], CHAPTERS[0].accent[2]) },
+        uColorB: { value: new THREE.Color(CHAPTERS[1].accent[0], CHAPTERS[1].accent[1], CHAPTERS[1].accent[2]) },
+        uMix: { value: 0 },
+      };
+
+      const frag = /* glsl */ `
+        precision highp float;
+        uniform float uTime;
+        uniform vec2 uRes;
+        uniform vec2 uMouse;
+        uniform vec3 uColorA;
+        uniform vec3 uColorB;
+        uniform float uMix;
+
+        // hash + simplex-ish noise (lightweight)
+        vec3 hash3(vec2 p){
+          vec3 q = vec3(dot(p,vec2(127.1,311.7)),
+                        dot(p,vec2(269.5,183.3)),
+                        dot(p,vec2(419.2,371.9)));
+          return fract(sin(q)*43758.5453);
+        }
+        float noise(vec2 p){
+          vec2 i = floor(p); vec2 f = fract(p);
+          float a = hash3(i).x;
+          float b = hash3(i+vec2(1.0,0.0)).x;
+          float c = hash3(i+vec2(0.0,1.0)).x;
+          float d = hash3(i+vec2(1.0,1.0)).x;
+          vec2 u = f*f*(3.0-2.0*f);
+          return mix(a,b,u.x) + (c-a)*u.y*(1.0-u.x) + (d-b)*u.x*u.y;
+        }
+        float fbm(vec2 p){
+          float v = 0.0; float a = 0.5;
+          for(int i=0;i<5;i++){ v += a*noise(p); p*=2.02; a*=0.5; }
+          return v;
+        }
+        void main(){
+          vec2 uv = gl_FragCoord.xy / uRes.xy;
+          vec2 p = uv * vec2(uRes.x/uRes.y, 1.0);
+          float t = uTime * 0.06;
+          vec2 q = vec2(fbm(p + t), fbm(p - t + 3.1));
+          float n = fbm(p*1.8 + q*1.6 + t);
+          // cursor halo
+          float d = distance(uv, uMouse);
+          float halo = smoothstep(0.45, 0.0, d) * 0.55;
+          vec3 col = mix(uColorA, uColorB, uMix);
+          // painterly brush — modulate luminance, keep deep base
+          float k = smoothstep(0.15, 0.95, n + halo*0.5);
+          vec3 base = vec3(0.02, 0.02, 0.03);
+          vec3 paint = mix(base, col, k * 0.55 + halo * 0.35);
+          // vignette
+          float vig = smoothstep(1.2, 0.2, length(uv - 0.5));
+          paint *= vig;
+          gl_FragColor = vec4(paint, 1.0);
+        }
+      `;
+
+      const mat = new THREE.ShaderMaterial({
+        uniforms,
+        vertexShader: `void main(){ gl_Position = vec4(position, 1.0); }`,
+        fragmentShader: frag,
+      });
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat);
+      scene.add(mesh);
+
+      const resize = () => {
+        const w = window.innerWidth, h = window.innerHeight;
+        renderer.setSize(w, h, false);
+        uniforms.uRes.value.set(w, h);
+      };
+      resize();
+      window.addEventListener("resize", resize);
+
+      const onMove = (e: PointerEvent) => {
+        uniforms.uMouseTarget.value.set(
+          e.clientX / window.innerWidth,
+          1 - e.clientY / window.innerHeight,
+        );
+      };
+      window.addEventListener("pointermove", onMove);
+
+      const tmpA = new THREE.Color();
+      const tmpB = new THREE.Color();
+      const start = performance.now();
+      const tick = () => {
+        const idx = activeRef.current;
+        const next = Math.min(CHAPTERS.length - 1, idx + 1);
+        const a = CHAPTERS[idx].accent;
+        const b = CHAPTERS[next].accent;
+        tmpA.setRGB(a[0], a[1], a[2]);
+        tmpB.setRGB(b[0], b[1], b[2]);
+        uniforms.uColorA.value.lerp(tmpA, 0.04);
+        uniforms.uColorB.value.lerp(tmpB, 0.04);
+
+        // mouse damp
+        uniforms.uMouse.value.lerp(uniforms.uMouseTarget.value, 0.08);
+        uniforms.uTime.value = (performance.now() - start) / 1000;
+        renderer.render(scene, camera);
+        raf = requestAnimationFrame(tick);
+      };
+      tick();
+
+      cleanup = () => {
+        cancelAnimationFrame(raf);
+        window.removeEventListener("resize", resize);
+        window.removeEventListener("pointermove", onMove);
+        mesh.geometry.dispose();
+        mat.dispose();
+        renderer.dispose();
+      };
+    })();
+
+    return () => { disposed = true; cleanup?.(); };
+  }, []);
+
+  // Lenis smooth scroll + GSAP ScrollTrigger per-chapter animations
+  useEffect(() => {
+    let cleanup: (() => void) | null = null;
+    (async () => {
+      const [{ default: Lenis }, gsapMod, stMod] = await Promise.all([
+        import("lenis"),
+        import("gsap"),
+        import("gsap/ScrollTrigger"),
+      ]);
+      const gsap = gsapMod.default;
+      const ScrollTrigger = stMod.default;
+      gsap.registerPlugin(ScrollTrigger);
+
+      const lenis = new Lenis({ duration: 1.2, smoothWheel: true });
+      function raf(time: number) { lenis.raf(time); requestAnimationFrame(raf); }
+      requestAnimationFrame(raf);
+      lenis.on("scroll", ScrollTrigger.update);
+
+      const sections = gsap.utils.toArray<HTMLElement>("[data-chapter]");
+      sections.forEach((sec, i) => {
+        const eyebrow = sec.querySelector("[data-eyebrow]");
+        const title = sec.querySelector("[data-title]");
+        const body = sec.querySelector("[data-body]");
+        const media = sec.querySelector("[data-media]");
+        gsap.set([eyebrow, title, body, media].filter(Boolean), { opacity: 0, y: 40 });
+
+        ScrollTrigger.create({
+          trigger: sec,
+          start: "top 65%",
+          end: "bottom 35%",
+          onEnter: () => {
+            activeRef.current = i;
+            setActive(i);
+            gsap.to([eyebrow, title, body, media].filter(Boolean), {
+              opacity: 1, y: 0, duration: 1, ease: "power3.out", stagger: 0.12,
+            });
+          },
+          onEnterBack: () => {
+            activeRef.current = i;
+            setActive(i);
+          },
+        });
+      });
+
+      cleanup = () => {
+        ScrollTrigger.getAll().forEach((t) => t.kill());
+        lenis.destroy();
+      };
+    })();
+    return () => { cleanup?.(); };
+  }, []);
 
   return (
-    <div className="bg-gradient-to-b from-amber-50 via-white to-gray-50 min-h-screen">
-      <SiteNav />
-      <CartDrawer />
-      {/* HERO */}
-      <section className="relative py-28 px-6 sm:px-8 text-center overflow-hidden min-h-[80vh] flex items-center justify-center">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 max-w-3xl mx-auto animate-fade-in">
-          <div className="mb-8 flex justify-center">
-            <MoodiesLogo />
-          </div>
-          <h1 className="text-6xl sm:text-7xl font-light text-gray-800 italic mb-6 tracking-tight leading-tight">
-            Taste Your Mood
-          </h1>
-          <p className="text-xl text-gray-700 font-light mb-4 max-w-2xl mx-auto leading-relaxed">
-            Premium wellness edibles and devices. Emotional clarity through
-            intentional design.
-          </p>
-          <p className="text-sm text-gray-500 tracking-wide max-w-xl mx-auto mb-8">
-            Unified collections. Collectible packaging. Everyday luxury.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <Link
-              to="/shop"
-              className="px-8 py-3 bg-gray-900 text-white rounded-full font-medium text-sm hover:bg-gray-800 transition-colors"
-            >
-              Shop the collection
-            </Link>
-            <a
-              href="#mood-system"
-              className="px-8 py-3 border border-gray-300 text-gray-900 rounded-full font-medium text-sm hover:border-gray-500 transition-colors"
-            >
-              Explore moods
-            </a>
-          </div>
-        </div>
-      </section>
+    <div className="relative min-h-screen text-white">
+      <canvas
+        ref={canvasRef}
+        className="pointer-events-none fixed inset-0 -z-10 h-screen w-screen"
+        aria-hidden
+      />
 
-      {/* MOOD SYSTEM SELECTOR */}
-      <section id="mood-system" className="py-20 px-6 sm:px-8 bg-white border-t border-gray-100">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-light text-gray-800 mb-3">
-              Three Collections
-            </h2>
-            <p className="text-gray-600 text-sm">
-              One unified visual language. Three emotional directions.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-4 mb-16">
-            {(Object.entries(collections) as [CollectionKey, typeof collections[CollectionKey]][]).map(
-              ([key, mood]) => {
-                const isActive = selectedCollection === key;
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setSelectedCollection(key)}
-                    className={`px-8 py-3 rounded-lg font-light text-sm uppercase tracking-wider transition-all duration-500 border-2 ${
-                      isActive
-                        ? "text-gray-900"
-                        : "bg-gray-100 border-gray-100 text-gray-600 hover:border-gray-300"
-                    }`}
-                    style={{
-                      borderColor: isActive ? mood.color : undefined,
-                      backgroundColor: isActive ? `${mood.color}15` : undefined,
-                    }}
-                  >
-                    <span className="mr-2">{mood.icon}</span>
-                    {mood.name}
-                  </button>
-                );
-              }
-            )}
-          </div>
-
-          <div
-            className={`bg-gradient-to-br ${currentCollection.gradient} rounded-2xl border border-gray-200 p-8 sm:p-12 transition-all duration-700`}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-              <div className="animate-fade-in">
-                <div className="flex items-center gap-3 mb-6">
-                  <div
-                    className="w-3 h-16 rounded-full"
-                    style={{ backgroundColor: currentCollection.color }}
-                  />
-                  <div>
-                    <h3 className="text-3xl font-light text-gray-900">
-                      {currentCollection.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 mt-2">
-                      {currentCollection.mood}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-base text-gray-700 leading-relaxed mb-8">
-                  {currentCollection.description}
-                </p>
-
-                <div className="space-y-3">
-                  <p className="text-xs uppercase tracking-widest text-gray-500 font-medium">
-                    Products
-                  </p>
-                  {currentCollection.products.map((product) => (
-                    <div
-                      key={product.name}
-                      className="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-medium text-gray-900 text-sm">
-                            {product.name}
-                          </p>
-                          <p className="text-xs text-gray-600 mt-1">
-                            {product.flavor}
-                          </p>
-                        </div>
-                        <p className="text-xs font-medium text-gray-500">
-                          {product.serving}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-center">
-                <div className="relative w-64 h-72 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
-                  <img
-                    src={currentCollection.image}
-                    alt={`${currentCollection.name} collection packaging`}
-                    className="absolute inset-0 w-full h-full object-cover opacity-30"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/80 to-white/95" />
-                  <div
-                    className="absolute top-0 left-0 right-0 h-1"
-                    style={{ backgroundColor: currentCollection.color }}
-                  />
-                  <div className="relative z-10 text-center p-8 h-full flex flex-col justify-center">
-                    <div className="text-5xl opacity-60 mb-4">
-                      {currentCollection.icon}
-                    </div>
-                    <p
-                      className="text-xl font-light mb-2"
-                      style={{ color: currentCollection.color }}
-                    >
-                      {currentCollection.name}
-                    </p>
-                    <p className="text-xs text-gray-600 mb-6">
-                      {currentCollection.mood}
-                    </p>
-                    <div className="text-xs text-gray-500 space-y-1">
-                      <p>Premium Wellness Collection</p>
-                      <p>Unified Design System</p>
-                      <p>Collectible Packaging</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* VISUAL CONSISTENCY */}
-      <section className="py-20 px-6 sm:px-8 bg-gray-50 border-y border-gray-100">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-light text-gray-800 mb-3">
-              Unified Visual Language
-            </h2>
-            <p className="text-gray-600 text-sm">
-              Same spacing grid. Same photography direction. Same typographic
-              hierarchy.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {principles.map((principle) => (
-              <div
-                key={principle.title}
-                className="bg-white rounded-xl p-8 border border-gray-200 hover:shadow-lg transition-shadow"
-              >
-                <div className="text-3xl mb-4 opacity-60">{principle.icon}</div>
-                <h3 className="text-lg font-medium text-gray-900 mb-3">
-                  {principle.title}
-                </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  {principle.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* HOME GROWN */}
-      <section className="py-20 px-6 sm:px-8 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-light text-gray-800 mb-3">
-              Home Grown Collection
-            </h2>
-            <p className="text-gray-600 text-sm">
-              Artisanal confectionery & baked goods. Premium but approachable.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {homeGrown.map((product) => (
-              <div
-                key={product.category}
-                className="bg-gray-50 rounded-lg p-8 border border-gray-200"
-              >
-                <div className="text-4xl mb-4">{product.icon}</div>
-                <h3 className="text-xl font-light text-gray-900 mb-2">
-                  {product.category}
-                </h3>
-                <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-                  {product.description}
-                </p>
-                <div className="space-y-2">
-                  {product.specs.map((spec) => (
-                    <p
-                      key={spec}
-                      className="text-xs text-gray-500 flex items-center gap-2"
-                    >
-                      <span className="w-1 h-1 rounded-full bg-gray-400" />
-                      {spec}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* DEVICES */}
-      <section className="py-20 px-6 sm:px-8 bg-gray-50 border-y border-gray-100">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-light text-gray-800 mb-3">
-              Devices & Accessories
-            </h2>
-            <p className="text-gray-600 text-sm">
-              Industrial minimalism. Tech meets warmth.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {devices.map((device) => (
-              <div
-                key={device.name}
-                className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
-              >
-                <div className="bg-gradient-to-br from-gray-100 to-gray-200 h-40 overflow-hidden">
-                  <img
-                    src={device.image}
-                    alt={device.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover opacity-90"
-                  />
-                </div>
-                <div className="p-6">
-                  <h4 className="font-light text-gray-900 text-sm mb-2">
-                    {device.name}
-                  </h4>
-                  <p className="text-xs text-gray-600 mb-4">
-                    Color: {device.color}
-                  </p>
-                  <p className="text-xs text-gray-500">{device.specs}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* KIOSK / RETAIL */}
-      <section className="py-20 px-6 sm:px-8 bg-white">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div className="rounded-xl overflow-hidden border border-gray-200">
-            <img
-              src={kioskImg}
-              alt="Moodies retail kiosk"
-              loading="lazy"
-              className="w-full h-full object-cover"
+      {/* fixed chapter indicator */}
+      <div className="pointer-events-none fixed left-6 top-1/2 z-30 hidden -translate-y-1/2 flex-col gap-3 md:flex">
+        {CHAPTERS.map((c, i) => (
+          <div key={c.id} className="flex items-center gap-3">
+            <span
+              className="h-px transition-all duration-500"
+              style={{
+                width: active === i ? 36 : 14,
+                background: active === i ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.25)",
+              }}
             />
-          </div>
-          <div>
-            <h2 className="text-4xl font-light text-gray-800 mb-4">
-              Retail Presence
-            </h2>
-            <p className="text-gray-600 text-sm leading-relaxed mb-4">
-              Moodies kiosks bring the unified visual system to life in
-              premium retail spaces across South Africa — from V&amp;A
-              Waterfront to Canal Walk.
-            </p>
-            <p className="text-gray-500 text-xs">
-              Cape Town · Johannesburg · Nationwide courier · Discreet
-              packaging
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* BRAND POSITIONING */}
-      <section className="py-24 px-6 sm:px-8 bg-gray-50 border-t border-gray-100">
-        <div className="max-w-2xl mx-auto text-center">
-          <p className="text-2xl font-light text-gray-800 italic mb-8 leading-relaxed">
-            "Premium wellness lifestyle. Globally competitive.
-            Distinctly considered."
-          </p>
-          <div className="space-y-4 text-sm text-gray-600">
-            <p>
-              Moodies is built on four non-negotiable principles:{" "}
-              <strong>simplicity</strong> over complexity,{" "}
-              <strong>consistency</strong> over variation,{" "}
-              <strong>emotional clarity</strong> over confusion, and{" "}
-              <strong>premium restraint</strong> over noise.
-            </p>
-            <p>
-              Every design touchpoint — from packaging to website — flows from
-              unified visual rules. This consistency is our brand's
-              superpower.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* CORE PRINCIPLES */}
-      <section className="py-20 px-6 sm:px-8 bg-white border-t border-gray-100">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-light text-gray-800">
-              Core Design Principles
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-            {corePrinciples.map((principle) => (
-              <div
-                key={principle.label}
-                className="bg-gray-50 rounded-lg p-6 border border-gray-200 text-center"
-              >
-                <div className="text-3xl mb-3 opacity-60">
-                  {principle.emoji}
-                </div>
-                <p className="text-sm font-medium text-gray-900">
-                  {principle.label}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-20 px-6 sm:px-8 bg-gray-50 border-t border-gray-100">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-light text-gray-800 mb-6">
-            Experience the Collection
-          </h2>
-          <p className="text-gray-600 text-sm mb-8">
-            Discover how intentional design and emotional clarity come together
-            in every Moodies product.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link
-              to="/shop"
-              className="px-8 py-3 bg-gray-900 text-white rounded-lg font-light hover:bg-gray-800 transition-colors"
+            <span
+              className="text-[10px] uppercase tracking-[0.3em] transition-opacity"
+              style={{ opacity: active === i ? 1 : 0.35 }}
             >
-              Shop the collection
-            </Link>
-            <a
-              href="mailto:hello@moodies.site?subject=Tell%20me%20more%20about%20Moodies"
-              className="px-8 py-3 border border-gray-300 text-gray-900 rounded-lg font-light hover:border-gray-400 transition-colors"
-            >
-              Learn More
-            </a>
+              {c.eyebrow}
+            </span>
           </div>
-        </div>
-      </section>
+        ))}
+      </div>
 
-      {/* FOOTER */}
-      <footer className="py-12 px-6 sm:px-8 bg-gray-900 text-gray-300 text-center text-sm border-t border-gray-800">
-        <p className="mb-4">Moodies | Premium Wellness Edibles & Devices</p>
-        <p className="text-gray-500 text-xs mb-6">
-          Unified visual identity. Collectible packaging. Emotional clarity
-          through intentional design.
-        </p>
-        <div className="flex justify-center gap-4 mb-6">
-          <a
-            href="https://instagram.com/moodies"
-            aria-label="Instagram"
-            className="text-gray-400 hover:text-white"
-          >
-            <Instagram size={18} />
-          </a>
-          <a
-            href="mailto:hello@moodies.site"
-            aria-label="Email"
-            className="text-gray-400 hover:text-white"
-          >
-            <Mail size={18} />
-          </a>
-        </div>
-        <p className="text-gray-600 text-xs">
-          <a href="mailto:hello@moodies.site" className="hover:text-gray-300">
-            hello@moodies.site
-          </a>{" "}
-          · moodies.site
-        </p>
+      {/* top bar */}
+      <header className="fixed inset-x-0 top-0 z-30 flex items-center justify-between px-6 py-5 md:px-10">
+        <span className="text-sm font-light tracking-[0.4em]">MOODIES</span>
+        <a
+          href="mailto:hello@moodies.site"
+          className="text-[10px] uppercase tracking-[0.3em] text-white/60 transition hover:text-white"
+        >
+          hello@moodies.site
+        </a>
+      </header>
+
+      <main className="relative z-10">
+        {CHAPTERS.map((c, i) => (
+          <Section key={c.id} chapter={c} index={i} />
+        ))}
+      </main>
+
+      <footer className="relative z-10 border-t border-white/10 px-6 py-10 text-center text-[10px] uppercase tracking-[0.3em] text-white/40 md:px-10">
+        © {new Date().getFullYear()} Moodies — Crafted in South Africa
       </footer>
     </div>
+  );
+}
+
+function Section({ chapter, index }: { chapter: Chapter; index: number }) {
+  const isHero = index === 0;
+  const isCta = chapter.id === "cta";
+
+  return (
+    <section
+      data-chapter={chapter.id}
+      className="relative flex min-h-screen items-center px-6 py-32 md:px-16"
+    >
+      <div className="mx-auto grid w-full max-w-6xl items-center gap-12 md:grid-cols-2">
+        <div className={isHero || isCta ? "md:col-span-2 md:text-center" : ""}>
+          <p
+            data-eyebrow
+            className="text-[10px] uppercase tracking-[0.4em]"
+            style={{ color: `rgb(${chapter.accent.map((v) => Math.round(v * 255)).join(",")})` }}
+          >
+            {chapter.eyebrow}
+          </p>
+          <h2
+            data-title
+            className={`mt-6 font-light leading-[0.95] tracking-tight ${
+              isHero ? "text-6xl md:text-[9rem]" : "text-5xl md:text-7xl"
+            }`}
+          >
+            {chapter.title}
+          </h2>
+          <p
+            data-body
+            className={`mt-8 max-w-xl text-base leading-relaxed text-white/70 md:text-lg ${
+              isHero || isCta ? "md:mx-auto" : ""
+            }`}
+          >
+            {chapter.body}
+          </p>
+          {isHero && (
+            <p data-body className="mt-10 text-[10px] uppercase tracking-[0.4em] text-white/40">
+              Scroll to begin ↓
+            </p>
+          )}
+          {isCta && (
+            <div data-body className="mt-12 flex flex-wrap justify-center gap-3">
+              <a
+                href="mailto:hello@moodies.site?subject=Order%20enquiry"
+                className="rounded-full bg-white px-7 py-3.5 text-xs uppercase tracking-[0.25em] text-black transition hover:bg-white/90"
+              >
+                Order now
+              </a>
+              <a
+                href="mailto:hello@moodies.site?subject=Tell%20me%20more"
+                className="rounded-full border border-white/30 px-7 py-3.5 text-xs uppercase tracking-[0.25em] text-white transition hover:bg-white hover:text-black"
+              >
+                Learn more
+              </a>
+            </div>
+          )}
+        </div>
+
+        {chapter.image && (
+          <div data-media className="relative">
+            <div
+              className="absolute -inset-6 rounded-3xl opacity-40 blur-3xl"
+              style={{
+                background: `rgb(${chapter.accent.map((v) => Math.round(v * 255)).join(",")})`,
+              }}
+              aria-hidden
+            />
+            <img
+              src={chapter.image}
+              alt={`${chapter.title} mood`}
+              className="relative aspect-[4/5] w-full rounded-2xl object-cover shadow-2xl"
+              loading={index <= 1 ? "eager" : "lazy"}
+            />
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

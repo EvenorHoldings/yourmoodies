@@ -9,23 +9,21 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
-import { CartProvider } from "@/lib/cart-context";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen items-center justify-center bg-black px-4 text-white">
       <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+        <h1 className="text-7xl font-light tracking-tight">404</h1>
+        <p className="mt-4 text-sm uppercase tracking-[0.3em] text-white/60">
+          This chapter doesn't exist
         </p>
-        <div className="mt-6">
+        <div className="mt-8">
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-full border border-white/30 px-6 py-3 text-xs uppercase tracking-[0.2em] transition hover:bg-white hover:text-black"
           >
-            Go home
+            Back to the story
           </Link>
         </div>
       </div>
@@ -36,32 +34,16 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen items-center justify-center bg-black px-4 text-white">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
-        </p>
+        <h1 className="text-xl tracking-tight">Something interrupted the flow</h1>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Try again
-          </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Go home
-          </a>
+            onClick={() => { router.invalidate(); reset(); }}
+            className="rounded-full border border-white/30 px-5 py-2 text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black"
+          >Try again</button>
+          <a href="/" className="rounded-full border border-white/30 px-5 py-2 text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black">Home</a>
         </div>
       </div>
     </div>
@@ -73,36 +55,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Moodies | Premium Wellness Edibles & Devices" },
-      { name: "description", content: "Discover Moodies — premium wellness edibles and devices designed for emotional clarity. Shop Uplift, Calm, and Balance collections at moodies.site." },
+      { title: "Moodies | Taste Your Mood" },
+      { name: "description", content: "A scroll-driven journey through Uplift, Calm and Balance. Premium wellness edibles designed for emotional clarity." },
       { name: "author", content: "Moodies" },
-      { name: "theme-color", content: "#0a0a1a" },
+      { name: "theme-color", content: "#0a0a0a" },
       { property: "og:site_name", content: "Moodies" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@moodies" },
     ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-    ],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Organization",
-          name: "Moodies",
-          url: "https://www.moodies.site",
-          logo: "https://www.moodies.site/og-image.jpg",
-          description: "Premium wellness edibles and devices. Emotional clarity through intentional design.",
-          email: "hello@moodies.site",
-          sameAs: [],
-        }),
-      },
-    ],
+    links: [{ rel: "stylesheet", href: appCss }],
+    scripts: [{
+      type: "application/ld+json",
+      children: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        name: "Moodies",
+        url: "https://www.moodies.site",
+        description: "Premium wellness edibles. Taste your mood.",
+        email: "hello@moodies.site",
+      }),
+    }],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -112,11 +84,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
+    <html lang="en" className="dark">
+      <head><HeadContent /></head>
+      <body className="bg-black text-white antialiased">
         {children}
         <Scripts />
       </body>
@@ -126,12 +96,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-
   return (
     <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <Outlet />
-      </CartProvider>
+      <Outlet />
     </QueryClientProvider>
   );
 }
