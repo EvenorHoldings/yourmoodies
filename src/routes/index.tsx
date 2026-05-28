@@ -1,9 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import upliftImg from "@/assets/moodies-uplift.jpg";
 import calmImg from "@/assets/moodies-combo.jpg";
 import balanceImg from "@/assets/moodies-trio.jpg";
+import { CartButton } from "@/components/cart-drawer";
+import { useCart } from "@/lib/cart-context";
+import { SHOP_PRODUCTS, formatZAR, type Mood } from "@/lib/shop-products";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -302,13 +305,16 @@ function StoryPage() {
 
       {/* top bar */}
       <header className="fixed inset-x-0 top-0 z-30 flex items-center justify-between px-6 py-5 md:px-10">
-        <span className="text-sm font-light tracking-[0.4em]">MOODIES</span>
-        <a
-          href="mailto:hello@moodies.site"
-          className="text-[10px] uppercase tracking-[0.3em] text-white/60 transition hover:text-white"
-        >
-          hello@moodies.site
-        </a>
+        <Link to="/" className="text-sm font-light tracking-[0.4em]">MOODIES</Link>
+        <div className="flex items-center gap-4">
+          <Link
+            to="/shop"
+            className="hidden text-[10px] uppercase tracking-[0.3em] text-white/60 transition hover:text-white sm:inline"
+          >
+            Shop
+          </Link>
+          <CartButton />
+        </div>
       </header>
 
       <main className="relative z-10">
@@ -365,18 +371,24 @@ function Section({ chapter, index }: { chapter: Chapter; index: number }) {
           )}
           {isCta && (
             <div data-body className="mt-12 flex flex-wrap justify-center gap-3">
-              <a
-                href="mailto:hello@moodies.site?subject=Order%20enquiry"
+              <Link
+                to="/shop"
                 className="rounded-full bg-white px-7 py-3.5 text-xs uppercase tracking-[0.25em] text-black transition hover:bg-white/90"
               >
-                Order now
-              </a>
+                Shop the collection
+              </Link>
               <a
                 href="mailto:hello@moodies.site?subject=Tell%20me%20more"
                 className="rounded-full border border-white/30 px-7 py-3.5 text-xs uppercase tracking-[0.25em] text-white transition hover:bg-white hover:text-black"
               >
                 Learn more
               </a>
+            </div>
+          )}
+
+          {(chapter.id === "uplift" || chapter.id === "calm" || chapter.id === "balance") && (
+            <div data-body className="mt-10">
+              <ChapterShelf mood={chapter.id as Mood} accent={chapter.accent} />
             </div>
           )}
         </div>
@@ -400,5 +412,34 @@ function Section({ chapter, index }: { chapter: Chapter; index: number }) {
         )}
       </div>
     </section>
+  );
+}
+
+function ChapterShelf({ mood, accent }: { mood: Mood; accent: [number, number, number] }) {
+  const { add, setOpen } = useCart();
+  const items = SHOP_PRODUCTS.filter((p) => p.mood === mood).slice(0, 3);
+  const accentCss = `rgb(${accent.map((v) => Math.round(v * 255)).join(",")})`;
+
+  return (
+    <ul className="grid gap-3 sm:grid-cols-3">
+      {items.map((p) => (
+        <li
+          key={p.id}
+          className="group flex flex-col rounded-xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur transition hover:border-white/30"
+        >
+          <p className="text-[10px] uppercase tracking-[0.25em] text-white/40">{p.subcategory}</p>
+          <p className="mt-2 text-sm font-light leading-tight">{p.name}</p>
+          <p className="mt-3 text-xs tabular-nums" style={{ color: accentCss }}>
+            {formatZAR(p.price)}
+          </p>
+          <button
+            onClick={() => { add(p.id); setOpen(true); }}
+            className="mt-4 inline-flex items-center justify-center rounded-full border border-white/20 px-3 py-2 text-[10px] uppercase tracking-[0.25em] text-white/80 transition hover:border-white/60 hover:text-white"
+          >
+            Add to cart
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }
