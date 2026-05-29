@@ -87,7 +87,7 @@ function StoryPage() {
   const [active, setActive] = useState(0);
   const activeRef = useRef(0);
 
-  // Three.js shader background — cursor-reactive painted noise tinted per chapter
+  // Three.js shader background — throttled to 30fps, pauses when tab hidden
   useEffect(() => {
     let raf = 0;
     let disposed = false;
@@ -98,8 +98,13 @@ function StoryPage() {
       if (disposed || !canvasRef.current) return;
 
       const canvas = canvasRef.current;
-      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: false, // perf: not needed for full-screen shader
+        alpha: true,
+        powerPreference: "high-performance",
+      });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
       const scene = new THREE.Scene();
       const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
@@ -140,7 +145,8 @@ function StoryPage() {
         }
         float fbm(vec2 p){
           float v = 0.0; float a = 0.5;
-          for(int i=0;i<5;i++){ v += a*noise(p); p*=2.02; a*=0.5; }
+          // perf: 4 octaves instead of 5
+          for(int i=0;i<4;i++){ v += a*noise(p); p*=2.02; a*=0.5; }
           return v;
         }
         void main(){
@@ -149,15 +155,12 @@ function StoryPage() {
           float t = uTime * 0.06;
           vec2 q = vec2(fbm(p + t), fbm(p - t + 3.1));
           float n = fbm(p*1.8 + q*1.6 + t);
-          // cursor halo
           float d = distance(uv, uMouse);
           float halo = smoothstep(0.45, 0.0, d) * 0.55;
           vec3 col = mix(uColorA, uColorB, uMix);
-          // painterly brush — modulate luminance, keep deep base
           float k = smoothstep(0.15, 0.95, n + halo*0.5);
           vec3 base = vec3(0.02, 0.02, 0.03);
           vec3 paint = mix(base, col, k * 0.55 + halo * 0.35);
-          // vignette
           float vig = smoothstep(1.2, 0.2, length(uv - 0.5));
           paint *= vig;
           gl_FragColor = vec4(paint, 1.0);
@@ -172,47 +175,71 @@ function StoryPage() {
       const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat);
       scene.add(mesh);
 
-      const resize = () => {
+      // Debounced resize
+      let resizeTimer: ReturnType<typeof setTimeout> | null = null;
+      const doResize = () => {
         const w = window.innerWidth, h = window.innerHeight;
         renderer.setSize(w, h, false);
         uniforms.uRes.value.set(w, h);
       };
-      resize();
-      window.addEventListener("resize", resize);
+      doResize();
+      const onResize = () => {
+        if (resizeTimer) clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(doResize, 200);
+      };
+      window.addEventListener("resize", onResize);
 
+      // Throttled pointer (max ~10/s)
+      let lastMove = 0;
       const onMove = (e: PointerEvent) => {
+        const now = performance.now();
+        if (now - lastMove < 100) return;
+        lastMove = now;
         uniforms.uMouseTarget.value.set(
           e.clientX / window.innerWidth,
           1 - e.clientY / window.innerHeight,
         );
       };
-      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointermove", onMove, { passive: true });
+
+      // Pause render when tab is hidden
+      let visible = !document.hidden;
+      const onVis = () => { visible = !document.hidden; };
+      document.addEventListener("visibilitychange", onVis);
 
       const tmpA = new THREE.Color();
       const tmpB = new THREE.Color();
       const start = performance.now();
-      const tick = () => {
+      const FRAME = 1000 / 30; // 30fps cap
+      let lastFrame = 0;
+
+      const tick = (now: number) => {
+        raf = requestAnimationFrame(tick);
+        if (!visible) return;
+        if (now - lastFrame < FRAME) return;
+        lastFrame = now;
+
         const idx = activeRef.current;
         const next = Math.min(CHAPTERS.length - 1, idx + 1);
         const a = CHAPTERS[idx].accent;
         const b = CHAPTERS[next].accent;
         tmpA.setRGB(a[0], a[1], a[2]);
         tmpB.setRGB(b[0], b[1], b[2]);
-        uniforms.uColorA.value.lerp(tmpA, 0.04);
-        uniforms.uColorB.value.lerp(tmpB, 0.04);
+        uniforms.uColorA.value.lerp(tmpA, 0.06);
+        uniforms.uColorB.value.lerp(tmpB, 0.06);
 
-        // mouse damp
-        uniforms.uMouse.value.lerp(uniforms.uMouseTarget.value, 0.08);
-        uniforms.uTime.value = (performance.now() - start) / 1000;
+        uniforms.uMouse.value.lerp(uniforms.uMouseTarget.value, 0.1);
+        uniforms.uTime.value = (now - start) / 1000;
         renderer.render(scene, camera);
-        raf = requestAnimationFrame(tick);
       };
-      tick();
+      raf = requestAnimationFrame(tick);
 
       cleanup = () => {
         cancelAnimationFrame(raf);
-        window.removeEventListener("resize", resize);
+        if (resizeTimer) clearTimeout(resizeTimer);
+        window.removeEventListener("resize", onResize);
         window.removeEventListener("pointermove", onMove);
+        document.removeEventListener("visibilitychange", onVis);
         mesh.geometry.dispose();
         mat.dispose();
         renderer.dispose();
@@ -225,6 +252,8 @@ function StoryPage() {
   // Lenis smooth scroll + GSAP ScrollTrigger per-chapter animations
   useEffect(() => {
     let cleanup: (() => void) | null = null;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
     (async () => {
       const [{ default: Lenis }, gsapMod, stMod] = await Promise.all([
         import("lenis"),
@@ -235,10 +264,15 @@ function StoryPage() {
       const ScrollTrigger = stMod.default;
       gsap.registerPlugin(ScrollTrigger);
 
-      const lenis = new Lenis({ duration: 1.2, smoothWheel: true });
-      function raf(time: number) { lenis.raf(time); requestAnimationFrame(raf); }
-      requestAnimationFrame(raf);
+      const lenis = new Lenis({
+        duration: reduced ? 0.4 : 0.9,
+        smoothWheel: !reduced,
+      });
       lenis.on("scroll", ScrollTrigger.update);
+      // Single RAF loop driven by GSAP ticker (avoids a 2nd rAF)
+      const tickerFn = (time: number) => lenis.raf(time * 1000);
+      gsap.ticker.add(tickerFn);
+      gsap.ticker.lagSmoothing(0);
 
       const sections = gsap.utils.toArray<HTMLElement>("[data-chapter]");
       sections.forEach((sec, i) => {
@@ -246,33 +280,43 @@ function StoryPage() {
         const title = sec.querySelector("[data-title]");
         const body = sec.querySelector("[data-body]");
         const media = sec.querySelector("[data-media]");
-        gsap.set([eyebrow, title, body, media].filter(Boolean), { opacity: 0, y: 40 });
+        const targets = [eyebrow, title, body, media].filter(Boolean);
+        gsap.set(targets, { opacity: 0, y: 40 });
 
+        // One-shot fade-in: animates the first time the section enters.
+        ScrollTrigger.create({
+          trigger: sec,
+          start: "top 70%",
+          once: true,
+          onEnter: () => {
+            gsap.to(targets, {
+              opacity: 1, y: 0,
+              duration: reduced ? 0.3 : 0.9,
+              ease: "power3.out",
+              stagger: reduced ? 0 : 0.1,
+            });
+          },
+        });
+
+        // Separate lightweight trigger just for active-chapter tracking.
         ScrollTrigger.create({
           trigger: sec,
           start: "top 65%",
           end: "bottom 35%",
-          onEnter: () => {
-            activeRef.current = i;
-            setActive(i);
-            gsap.to([eyebrow, title, body, media].filter(Boolean), {
-              opacity: 1, y: 0, duration: 1, ease: "power3.out", stagger: 0.12,
-            });
-          },
-          onEnterBack: () => {
-            activeRef.current = i;
-            setActive(i);
-          },
+          onEnter: () => { activeRef.current = i; setActive(i); },
+          onEnterBack: () => { activeRef.current = i; setActive(i); },
         });
       });
 
       cleanup = () => {
         ScrollTrigger.getAll().forEach((t) => t.kill());
+        gsap.ticker.remove(tickerFn);
         lenis.destroy();
       };
     })();
     return () => { cleanup?.(); };
   }, []);
+
 
   return (
     <div className="relative min-h-screen text-white">
